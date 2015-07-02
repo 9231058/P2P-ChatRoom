@@ -6,4 +6,4 @@
 #
 # [] Created By : Parham Alvani (parham.alvani@gmail.com)
 # =======================================
-add_executable (P2P-ChatRoom.out main.c)
+add_executable (P2P-ChatRoom.out main.c common.c)
