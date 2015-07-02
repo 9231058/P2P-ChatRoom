@@ -11,7 +11,22 @@
 /*
  * Copyright (c) 2015 Parham Alvani.
 */
-#ifndef P2P_CHATROOM_PEER_H
-#define P2P_CHATROOM_PEER_H
+#ifndef PEER_H
+#define PEER_H
+
+struct peer {
+	int socket_fd;
+	int port;
+	int status;
+};
+
+
+struct peer *peer_new(int socket_fd, int status);
+
+void peer_list_add(const struct peer *obj);
+
+int peer_list_size(void);
+
+struct peer *peer_list_get(int index);
 
 #endif
