@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include "common.h"
+#include "coordinator.h"
 
 int is_coordinator = 0;
 
@@ -38,4 +39,6 @@ int main(int argc, char *argv[])
 			sdie("unlink()");
 		printf("Coordinator died");
 	}
+
+	return 0;
 }
