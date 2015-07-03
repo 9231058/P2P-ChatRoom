@@ -18,6 +18,7 @@
 
 #include "common.h"
 #include "coordinator.h"
+#include "connections.h"
 
 int is_coordinator = 0;
 
@@ -33,6 +34,9 @@ int main(int argc, char *argv[])
 		is_coordinator = 1;
 		coordinator_file = fdopen(coordinator_fd, "w");
 	}
+
+
+	connections_run();
 
 	if (is_coordinator) {
 		if (unlink("/tmp/coordinator") < 0)
