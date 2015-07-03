@@ -1,9 +1,9 @@
 /*
  * In The Name Of God
  * ========================================
- * [] File Name : connections
+ * [] File Name : command
  *
- * [] Creation Date : 02-07-2015
+ * [] Creation Date : 03-07-2015
  *
  * [] Created By : Parham Alvani (parham.alvani@gmail.com)
  * =======================================
@@ -11,9 +11,9 @@
 /*
  * Copyright (c) 2015 Parham Alvani.
 */
-#ifndef CONNECTIONS_H
-#define CONNECTIONS_H
+#include "command.h"
 
-void *connections_run(void *data);
+void send_command(const char *message, int dest_id);
 
-#endif
+void quit_command(void);
+

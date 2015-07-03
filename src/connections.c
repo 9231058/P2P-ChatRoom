@@ -21,7 +21,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-void connections_run(void)
+int connection_is_run = 1;
+
+void *connections_run(void *data)
 {
 	FILE *peers_file;
 	int peer_port, peer_status;
@@ -76,4 +78,24 @@ void connections_run(void)
 	if (is_coordinator) {
 		fprintf(peers_file, "%d %d\n", server_addr.sin_port, 1);
 	}
+
+	while (is_run) {
+		struct sockaddr_in client_addr;
+		socklen_t client_addr_len = sizeof(client_addr);
+
+		int client_socket = accept(server_socket,
+			(struct sockaddr *) &client_addr,
+			&client_addr_len);
+
+		struct peer *new = peer_new(client_addr.sin_port, 1);
+		new->socket_fd = client_socket;
+		peer_list_add(new);
+	}
+	return NULL;
+}
+
+
+void *connections_handler_run(void *data)
+{
+
 }

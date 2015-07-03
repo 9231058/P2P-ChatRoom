@@ -15,12 +15,16 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "common.h"
 #include "coordinator.h"
 #include "connections.h"
+#include "command.h"
 
 int is_coordinator = 0;
+
+int main_is_run = 1;
 
 int main(int argc, char *argv[])
 {
@@ -35,8 +39,14 @@ int main(int argc, char *argv[])
 		coordinator_file = fdopen(coordinator_fd, "w");
 	}
 
+	pthread_t id;
+	pthread_create(&id, NULL, connections_run, NULL);
 
-	connections_run();
+	while (main_is_run) {
+		char buff[1024];
+		fgets(buff, 1024, stdin);
+		command_dispatcher(buff);
+	}
 
 	if (is_coordinator) {
 		if (unlink("/tmp/coordinator") < 0)
