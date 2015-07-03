@@ -18,12 +18,13 @@ struct peer {
 	int socket_fd;
 	int port;
 	int status;
+	struct peer *next;
 };
 
 
-struct peer *peer_new(int socket_fd, int status);
+struct peer *peer_new(int port, int status);
 
-void peer_list_add(const struct peer *obj);
+void peer_list_add(struct peer *obj);
 
 int peer_list_size(void);
 

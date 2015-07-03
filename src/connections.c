@@ -20,7 +20,6 @@
 void connections_run(void)
 {
 	FILE *peers_file;
-	int index = 0;
 	int peer_port, peer_status;
 
 	if (is_coordinator)
@@ -29,5 +28,10 @@ void connections_run(void)
 		peers_file = fopen("/temp/peers", "w");
 
 	while (fscanf(peers_file, "%d %d", &peer_port, &peer_status) < 2) {
+		struct peer *new = peer_new(peer_port, peer_status);
+		peer_list_add(new);
+	}
+	if (is_coordinator) {
+		fprintf(peers_file, "%d %d\n", 1373, 1);
 	}
 }
