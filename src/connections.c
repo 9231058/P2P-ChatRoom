@@ -15,11 +15,15 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <string.h>
 
 #include "connections.h"
 #include "coordinator.h"
 #include "peer.h"
 #include "common.h"
+#include "message.h"
+#include "net.h"
+#include "info.h"
 
 int connection_is_run = 1;
 
@@ -27,6 +31,7 @@ void *connections_run(void *data)
 {
 	FILE *peer_file;
 	int peer_port, peer_status;
+	char peer_name[255];
 
 	if (is_coordinator) {
 		peer_file = fopen("/tmp/peers", "a+");
@@ -37,8 +42,9 @@ void *connections_run(void *data)
 	if (!peer_file)
 		sdie("peer_file fopen()");
 
-	while (fscanf(peer_file, "%d %d", &peer_port, &peer_status) == 2) {
+	while (fscanf(peer_file, "%s %d %d", peer_name, &peer_port, &peer_status) == 2) {
 		struct peer *new = peer_new(peer_port, peer_status);
+		strcpy(new->name, peer_name);
 
 		if (peer_status) {
 			int client_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -77,7 +83,7 @@ void *connections_run(void *data)
 		sdie("listen()");
 
 	if (is_coordinator) {
-		fprintf(peer_file, "%hu %d\n", ntohs(server_addr.sin_port), 1);
+		fprintf(peer_file, "%s %hu %d\n", info_username, ntohs(server_addr.sin_port), 1);
 		fflush(peer_file);
 	}
 
@@ -116,18 +122,25 @@ void *connections_run(void *data)
 			struct peer *new = peer_new(ntohs(client_addr.sin_port), 1);
 			new->socket = client_socket;
 			peer_list_add(new);
-
-			if (is_coordinator) {
-				fprintf(peer_file, "%hu %d\n", new->port, new->status);
-				fflush(peer_file);
-			}
 		}
 		for (i = 0; i < peer_list_size(); i++) {
 			struct peer *p;
 
 			p = peer_list_get(i);
 			if (FD_ISSET(p->socket, &socket_fds_set)) {
-				fflush(stdout);
+				struct message m;
+
+				recv_message(&m, p->socket);
+				if (strlen(p->name) == 0) {
+					strcpy(p->name, m.src_name);
+					if (is_coordinator) {
+						fprintf(peer_file, "%s %hu %d\n", p->name, p->port, p->status);
+						fflush(peer_file);
+					}
+				} else {
+					fflush(stdout);
+					printf("%s: %s\n", m.src_name, m.body);
+				}
 			}
 		}
 
