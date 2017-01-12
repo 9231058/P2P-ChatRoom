@@ -25,19 +25,19 @@ int connection_is_run = 1;
 
 void *connections_run(void *data)
 {
-	FILE *peers_file;
+	FILE *peer_file;
 	int peer_port, peer_status;
 
 	if (is_coordinator) {
-		peers_file = fopen("/tmp/peers", "a+");
+		peer_file = fopen("/tmp/peers", "a+");
 	} else {
-		peers_file = fopen("/tmp/peers", "r");
+		peer_file = fopen("/tmp/peers", "r");
 	}
 
-	if (!peers_file)
-		sdie("peers_file fopen()");
+	if (!peer_file)
+		sdie("peer_file fopen()");
 
-	while (fscanf(peers_file, "%d %d", &peer_port, &peer_status) == 2) {
+	while (fscanf(peer_file, "%d %d", &peer_port, &peer_status) == 2) {
 		struct peer *new = peer_new(peer_port, peer_status);
 
 		if (peer_status) {
@@ -68,13 +68,17 @@ void *connections_run(void *data)
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	server_addr.sin_port = htons(0);
 
-	bind(server_socket, (const struct sockaddr *) &server_addr,
-			server_addr_len);
+	if (bind(server_socket, (const struct sockaddr *) &server_addr,
+			server_addr_len) == -1)
+		sdie("bind()");
 	getsockname(server_socket, (struct sockaddr *) &server_addr,
 			&server_addr_len);
+	if (listen(server_socket, 10) == -1)
+		sdie("listen()");
 
 	if (is_coordinator) {
-		fprintf(peers_file, "%d %d\n", server_addr.sin_port, 1);
+		fprintf(peer_file, "%hu %d\n", ntohs(server_addr.sin_port), 1);
+		fflush(peer_file);
 	}
 
 	while (connection_is_run) {
@@ -109,12 +113,13 @@ void *connections_run(void *data)
 					(struct sockaddr *) &client_addr,
 					&client_addr_len);
 
-			struct peer *new = peer_new(client_addr.sin_port, 1);
+			struct peer *new = peer_new(ntohs(client_addr.sin_port), 1);
 			new->socket = client_socket;
 			peer_list_add(new);
 
 			if (is_coordinator) {
-				fprintf(peers_file, "%d %d\n", new->port, new->status);
+				fprintf(peer_file, "%d %d\n", new->port, new->status);
+				fflush(peer_file);
 			}
 		}
 		for (i = 0; i < peer_list_size(); i++) {
@@ -123,7 +128,7 @@ void *connections_run(void *data)
 			p = peer_list_get(i);
 			if (FD_ISSET(p->socket, &socket_fds_set)) {
 				fflush(stdout);
-				printf("P2PChatroom [%s]: %s", p->name, "Hello");
+				printf("P2PChatroom [%d]: %s\n", p->port, "Hello");
 			}
 		}
 
