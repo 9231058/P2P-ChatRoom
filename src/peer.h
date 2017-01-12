@@ -29,6 +29,8 @@ struct peer *peer_new(uint16_t port, int status);
 
 void peer_list_add(struct peer *obj);
 
+void peer_list_delete(int index);
+
 int peer_list_size(void);
 
 struct peer *peer_list_get(int index);

@@ -32,6 +32,32 @@ struct peer *peer_new(uint16_t port, int status)
 	return new;
 }
 
+void peer_list_delete(int index)
+{
+	int i = 0;
+	struct peer *t;
+	struct peer *it = head;
+
+	if (i == 0) {
+		t = head->next;
+		free(head);
+		head = t;
+		size--;
+		return;
+	}
+
+	while (it) {
+		if (i + 1 == index) {
+			t = it->next->next;
+			free(it->next);
+			it->next = t;
+			size--;
+			return;
+		}
+		it = it->next;
+		i++;
+	}
+}
 
 void peer_list_add(struct peer *obj)
 {
