@@ -18,6 +18,7 @@
 #include <pthread.h>
 
 #include "common.h"
+#include "info.h"
 #include "coordinator.h"
 #include "connections.h"
 #include "command.h"
@@ -26,10 +27,15 @@ int is_coordinator = 0;
 
 int main_is_run = 1;
 
+char info_username[255];
+
 int main(int argc, char *argv[])
 {
 	int coordinator_fd;
 	FILE *coordinator_file;
+
+	printf("P2PChatroom username: ");
+	scanf("%s", info_username);
 
 	coordinator_fd = open("/tmp/coordinator", O_EXCL | O_CREAT | O_WRONLY,
 		0664);
