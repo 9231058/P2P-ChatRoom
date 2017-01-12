@@ -32,7 +32,6 @@ char info_username[255];
 int main(int argc, char *argv[])
 {
 	int coordinator_fd;
-	FILE *coordinator_file;
 
 	printf("P2PChatroom username: ");
 	scanf("%s", info_username);
@@ -42,7 +41,6 @@ int main(int argc, char *argv[])
 	if (coordinator_fd > 0) {
 		printf("P2PChatroom rule: coordinator\n");
 		is_coordinator = 1;
-		coordinator_file = fdopen(coordinator_fd, "w");
 	} else {
 		printf("P2PChatroom rule: peer\n");
 		is_coordinator = 0;
