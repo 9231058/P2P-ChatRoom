@@ -34,9 +34,12 @@ int main(int argc, char *argv[])
 	coordinator_fd = open("/tmp/coordinator", O_EXCL | O_CREAT | O_WRONLY,
 		0664);
 	if (coordinator_fd > 0) {
-		printf("New coordinator is selected\n");
+		printf("[P2PChatroom] rule: coordinator\n");
 		is_coordinator = 1;
 		coordinator_file = fdopen(coordinator_fd, "w");
+	} else {
+		printf("[P2PChatroom] rule: peer\n");
+		is_coordinator = 0;
 	}
 
 	pthread_t id;
@@ -44,14 +47,9 @@ int main(int argc, char *argv[])
 
 	while (main_is_run) {
 		char buff[1024];
+		printf("P2PChatroom [parham]> ");
 		fgets(buff, 1024, stdin);
 		command_dispatcher(buff);
-	}
-
-	if (is_coordinator) {
-		if (unlink("/tmp/coordinator") < 0)
-			sdie("unlink()");
-		printf("Coordinator died");
 	}
 
 	return 0;
