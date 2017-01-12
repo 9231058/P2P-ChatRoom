@@ -24,13 +24,13 @@
 #include "net.h"
 #include "info.h"
 
-void send_command(const char *message, const char *user)
+void send_command(char *message, const char *user)
 {
 	struct message m;
 	struct peer *p;
 	int i;
 
-	strcpy(m.body, message);
+	m.body = message;
 	m.m_size = strlen(message);
 	strcpy(m.dst_name, user);
 	strcpy(m.src_name, info_username);
@@ -73,7 +73,7 @@ void command_dispatcher(const char *command)
 		char user[255];
 		char message[1024];
 
-		len = sscanf(command, "%s %s: %s", verb, user, message);
+		len = sscanf(command, "%s %s %s", verb, user, message);
 		if (len < 3) {
 			printf("send user: message\n");
 			return;
