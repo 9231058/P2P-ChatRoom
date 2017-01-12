@@ -11,18 +11,23 @@
 /*
  * Copyright (c) 2015 Parham Alvani.
 */
-#include "peer.h"
-
 #include <stdlib.h>
+#include <stdint.h>
+
+#include "peer.h"
 
 static struct peer *head;
 
-struct peer *peer_new(int port, int status)
+struct peer *peer_new(uint16_t port, int status)
 {
-	struct peer *new = malloc(sizeof(struct peer));
+	struct peer *new;
+	
+	new = malloc(sizeof(struct peer));
 	new->port = port;
 	new->status = status;
 	new->next = NULL;
+
+	return new;
 }
 
 
@@ -40,6 +45,7 @@ void peer_list_add(struct peer *obj)
 	}
 	it->next = obj;
 
+	return;
 }
 
 int peer_list_size(void)
@@ -66,4 +72,6 @@ struct peer *peer_list_get(int index)
 		it = it->next;
 		i++;
 	}
+
+	return NULL;
 }
