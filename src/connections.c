@@ -30,6 +30,7 @@ int connection_is_run = 1;
 
 void *connections_run(void *data)
 {
+
 	FILE *peer_file;
 	int peer_port, peer_status;
 	char peer_name[255];
@@ -42,37 +43,6 @@ void *connections_run(void *data)
 
 	if (!peer_file)
 		sdie("peer_file fopen()");
-
-	while (fscanf(peer_file, "%s %d %d", peer_name, &peer_port, &peer_status) == 3) {
-		struct peer *new = peer_new(peer_port, peer_status);
-		strcpy(new->name, peer_name);
-
-		if (peer_status) {
-			struct message m;
-			int client_socket;
-			struct sockaddr_in client_addr;
-
-			client_socket = socket(AF_INET, SOCK_STREAM, 0);
-
-			socklen_t client_addr_len = sizeof(client_addr);
-
-			client_addr.sin_family = AF_INET;
-			client_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-			client_addr.sin_port = htons(peer_port);
-
-			connect(client_socket,
-					(const struct sockaddr *) &client_addr,
-					client_addr_len);
-			new->socket = client_socket;
-
-			m.m_size = 0;
-			strcpy(m.src_name, info_username);
-			strcpy(m.dst_name, new->name);
-			send_message(&m, client_socket);
-		}
-
-		peer_list_add(new);
-	}
 
 	int server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -94,6 +64,40 @@ void *connections_run(void *data)
 	if (is_coordinator) {
 		fprintf(peer_file, "%s %hu %d\n", info_username, ntohs(server_addr.sin_port), 1);
 		fflush(peer_file);
+	}
+
+	while (fscanf(peer_file, "%s %d %d", peer_name, &peer_port, &peer_status) == 3) {
+		struct peer *new = peer_new(peer_port, peer_status);
+		strcpy(new->name, peer_name);
+
+		if (peer_status) {
+			struct message m;
+			char m_port[255];
+			int client_socket;
+			struct sockaddr_in client_addr;
+
+			client_socket = socket(AF_INET, SOCK_STREAM, 0);
+
+			socklen_t client_addr_len = sizeof(client_addr);
+
+			client_addr.sin_family = AF_INET;
+			client_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+			client_addr.sin_port = htons(peer_port);
+
+			connect(client_socket,
+					(const struct sockaddr *) &client_addr,
+					client_addr_len);
+			new->socket = client_socket;
+
+			sprintf(m_port, "%hu", ntohs(server_addr.sin_port));
+			m.m_size = strlen(m_port);
+			m.body = m_port;
+			strcpy(m.src_name, info_username);
+			strcpy(m.dst_name, new->name);
+			send_message(&m, client_socket);
+		}
+
+		peer_list_add(new);
 	}
 
 	while (connection_is_run) {
@@ -128,7 +132,7 @@ void *connections_run(void *data)
 					(struct sockaddr *) &client_addr,
 					&client_addr_len);
 
-			struct peer *new = peer_new(ntohs(client_addr.sin_port), 1);
+			struct peer *new = peer_new(0, 1);
 			new->socket = client_socket;
 			peer_list_add(new);
 		}
@@ -146,9 +150,9 @@ void *connections_run(void *data)
 					peer_list_delete(i);
 					i--;
 				} else {
-
 					if (strlen(p->name) == 0) {
 						strcpy(p->name, m.src_name);
+						sscanf(m.body, "%hu", &p->port);
 						if (is_coordinator) {
 							fprintf(peer_file, "%s %hu %d\n", p->name, p->port, p->status);
 							fflush(peer_file);
