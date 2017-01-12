@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 
 	while (main_is_run) {
 		char buff[1024];
-		printf("P2PChatroom [parham]> ");
+		printf("P2PChatroom [%s]> ", info_username);
 		fgets(buff, 1024, stdin);
 		command_dispatcher(buff);
 	}
