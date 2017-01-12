@@ -34,7 +34,7 @@ void *connections_run(void *data)
 	char peer_name[255];
 
 	if (is_coordinator) {
-		peer_file = fopen("/tmp/peers", "a+");
+		peer_file = fopen("/tmp/peers", "w");
 	} else {
 		peer_file = fopen("/tmp/peers", "r");
 	}
@@ -42,7 +42,7 @@ void *connections_run(void *data)
 	if (!peer_file)
 		sdie("peer_file fopen()");
 
-	while (fscanf(peer_file, "%s %d %d", peer_name, &peer_port, &peer_status) == 2) {
+	while (fscanf(peer_file, "%s %d %d", peer_name, &peer_port, &peer_status) == 3) {
 		struct peer *new = peer_new(peer_port, peer_status);
 		strcpy(new->name, peer_name);
 
