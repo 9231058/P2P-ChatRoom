@@ -35,6 +35,7 @@ void *connections_run(void *data)
 	int peer_port, peer_status;
 	char peer_name[255];
 
+	/* Opens peer file */
 	if (is_coordinator) {
 		peer_file = fopen("/tmp/peers", "w");
 	} else {
@@ -44,6 +45,7 @@ void *connections_run(void *data)
 	if (!peer_file)
 		sdie("peer_file fopen()");
 
+	/* Server up and running */
 	int server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
 	struct sockaddr_in server_addr;
@@ -66,6 +68,7 @@ void *connections_run(void *data)
 		fflush(peer_file);
 	}
 
+	/* Connects to others server */
 	while (fscanf(peer_file, "%s %d %d", peer_name, &peer_port, &peer_status) == 3) {
 		struct peer *new = peer_new(peer_port, peer_status);
 		strcpy(new->name, peer_name);
@@ -100,6 +103,7 @@ void *connections_run(void *data)
 		peer_list_add(new);
 	}
 
+	/* Let's live ! */
 	while (connection_is_run) {
 		int i = 0;
 		int max_socket_fd;
