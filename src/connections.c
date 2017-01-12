@@ -12,6 +12,7 @@
  * Copyright (c) 2015 Parham Alvani.
  */
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -50,7 +51,7 @@ void *connections_run(void *data)
 			struct message m;
 			int client_socket;
 			struct sockaddr_in client_addr;
-			
+
 			client_socket = socket(AF_INET, SOCK_STREAM, 0);
 
 			socklen_t client_addr_len = sizeof(client_addr);
@@ -83,7 +84,7 @@ void *connections_run(void *data)
 	server_addr.sin_port = htons(0);
 
 	if (bind(server_socket, (const struct sockaddr *) &server_addr,
-			server_addr_len) == -1)
+				server_addr_len) == -1)
 		sdie("bind()");
 	getsockname(server_socket, (struct sockaddr *) &server_addr,
 			&server_addr_len);
@@ -138,16 +139,23 @@ void *connections_run(void *data)
 			if (FD_ISSET(p->socket, &socket_fds_set)) {
 				struct message m;
 
-				recv_message(&m, p->socket);
-				if (strlen(p->name) == 0) {
-					strcpy(p->name, m.src_name);
-					if (is_coordinator) {
-						fprintf(peer_file, "%s %hu %d\n", p->name, p->port, p->status);
-						fflush(peer_file);
-					}
+				if (recv_message(&m, p->socket) <= 0) {
+					printf("%s left us alone\n", p->name);
+					close(p->socket);
+					peer_list_delete(i);
+					i--;
 				} else {
-					fflush(stdout);
-					printf("%s: %s\n", m.src_name, m.body);
+
+					if (strlen(p->name) == 0) {
+						strcpy(p->name, m.src_name);
+						if (is_coordinator) {
+							fprintf(peer_file, "%s %hu %d\n", p->name, p->port, p->status);
+							fflush(peer_file);
+						}
+					} else {
+						fflush(stdout);
+						printf("%s: %s\n", m.src_name, m.body);
+					}
 				}
 			}
 		}
