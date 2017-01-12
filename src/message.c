@@ -7,9 +7,17 @@
 
 int message_serialize(FILE *dest, const struct message *message)
 {
-	int return_value = fprintf(dest, "%s %s %zu\n%s",
-		message->src_name, message->dst_name,
-		message->m_size, message->body);
+	int return_value;
+	
+	if (message->m_size != 0) {
+		return_value = fprintf(dest, "%s %s %zu\n%s",
+				message->src_name, message->dst_name,
+				message->m_size, message->body);
+	} else {
+		return_value = fprintf(dest, "%s %s %zu\n",
+				message->src_name, message->dst_name,
+				message->m_size);
+	}
 	
 	if (return_value < 0)
 		sdie("message_serialize printf()");
