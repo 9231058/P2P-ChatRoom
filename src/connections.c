@@ -140,7 +140,8 @@ void *connections_run(void *data)
 				struct message m;
 
 				if (recv_message(&m, p->socket) <= 0) {
-					printf("%s left us alone\n", p->name);
+					fflush(stdout);
+					printf("\nP2PChatroom %s left us alone\n", p->name);
 					close(p->socket);
 					peer_list_delete(i);
 					i--;
@@ -154,7 +155,7 @@ void *connections_run(void *data)
 						}
 					} else {
 						fflush(stdout);
-						printf("%s: %s\n", m.src_name, m.body);
+						printf("\nP2PChatroom %s: %s\n", m.src_name, m.body);
 					}
 				}
 			}
