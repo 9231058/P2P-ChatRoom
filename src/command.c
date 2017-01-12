@@ -45,6 +45,18 @@ void send_command(char *message, const char *user)
 	}
 }
 
+void list_command(void)
+{
+	int i;
+	struct peer *p;
+
+	for (i = 0; i < peer_list_size(); i++) {
+		p = peer_list_get(i);
+
+		printf("\t[%d] %s: %hu\n", i, p->name, p->port);
+	}
+}
+
 void quit_command(void)
 {
 	if (is_coordinator) {
@@ -79,5 +91,7 @@ void command_dispatcher(const char *command)
 			return;
 		}
 		send_command(message, user);
+	} else if (!strcmp(verb, "list")) {
+		list_command();
 	}
 }
