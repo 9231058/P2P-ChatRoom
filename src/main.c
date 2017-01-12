@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
 
 	printf("P2PChatroom username: ");
 	scanf("%s", info_username);
+	getchar();
 
 	coordinator_fd = open("/tmp/coordinator", O_EXCL | O_CREAT | O_WRONLY,
 		0664);
