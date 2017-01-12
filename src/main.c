@@ -34,11 +34,11 @@ int main(int argc, char *argv[])
 	coordinator_fd = open("/tmp/coordinator", O_EXCL | O_CREAT | O_WRONLY,
 		0664);
 	if (coordinator_fd > 0) {
-		printf("[P2PChatroom] rule: coordinator\n");
+		printf("P2PChatroom rule: coordinator\n");
 		is_coordinator = 1;
 		coordinator_file = fdopen(coordinator_fd, "w");
 	} else {
-		printf("[P2PChatroom] rule: peer\n");
+		printf("P2PChatroom rule: peer\n");
 		is_coordinator = 0;
 	}
 
