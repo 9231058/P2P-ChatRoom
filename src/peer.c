@@ -57,5 +57,13 @@ int peer_list_size(void)
 
 struct peer *peer_list_get(int index)
 {
-}
+	int i = 0;
+	struct peer *it = head;
 
+	while (it) {
+		if (i == index)
+			return it;
+		it = it->next;
+		i++;
+	}
+}
