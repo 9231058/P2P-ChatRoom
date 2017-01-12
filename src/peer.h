@@ -17,7 +17,6 @@
 #include <stdint.h>
 
 struct peer {
-	char name[255];
 	int socket;
 	uint16_t port;
 	int status;
