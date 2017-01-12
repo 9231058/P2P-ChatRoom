@@ -16,7 +16,7 @@
 
 struct peer {
 	char name[255];
-	int socket_fd;
+	int socket;
 	int port;
 	int status;
 	struct peer *next;
