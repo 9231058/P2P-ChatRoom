@@ -38,7 +38,7 @@ void peer_list_delete(int index)
 	struct peer *t;
 	struct peer *it = head;
 
-	if (i == 0) {
+	if (index == 0) {
 		t = head->next;
 		free(head);
 		head = t;
