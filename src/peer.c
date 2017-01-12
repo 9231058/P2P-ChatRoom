@@ -17,6 +17,7 @@
 #include "peer.h"
 
 static struct peer *head;
+static int size;
 
 struct peer *peer_new(uint16_t port, int status)
 {
@@ -36,6 +37,7 @@ void peer_list_add(struct peer *obj)
 {
 	if (!head) {
 		head = obj;
+		size++;
 		return;
 	}
 
@@ -46,20 +48,14 @@ void peer_list_add(struct peer *obj)
 	}
 	it->next = obj;
 
+	size++;
+
 	return;
 }
 
 int peer_list_size(void)
 {
-	int index = 0;
-	struct peer *it = head;
-
-	while (it) {
-		it = it->next;
-		index++;
-	}
-
-	return index;
+	return size;
 }
 
 struct peer *peer_list_get(int index)
