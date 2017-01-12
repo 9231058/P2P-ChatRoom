@@ -7,10 +7,10 @@
  *
  * [] Created By : Parham Alvani (parham.alvani@gmail.com)
  * =======================================
-*/
+ */
 /*
  * Copyright (c) 2015 Parham Alvani.
-*/
+ */
 #include "connections.h"
 #include "coordinator.h"
 #include "peer.h"
@@ -30,10 +30,8 @@ void *connections_run(void *data)
 
 	if (is_coordinator) {
 		peers_file = fopen("/tmp/peers", "a+");
-		ulog("peers file opened for appending+");
 	} else {
 		peers_file = fopen("/tmp/peers", "r");
-		ulog("peers file opened for reading");
 	}
 
 	if (!peers_file)
@@ -53,9 +51,9 @@ void *connections_run(void *data)
 			client_addr.sin_port = htons(peer_port);
 
 			connect(client_socket,
-				(const struct sockaddr *) &client_addr,
-				client_addr_len);
-			new->socket_fd = client_socket;
+					(const struct sockaddr *) &client_addr,
+					client_addr_len);
+			new->socket = client_socket;
 		}
 
 		peer_list_add(new);
@@ -71,31 +69,64 @@ void *connections_run(void *data)
 	server_addr.sin_port = htons(0);
 
 	bind(server_socket, (const struct sockaddr *) &server_addr,
-		server_addr_len);
+			server_addr_len);
 	getsockname(server_socket, (struct sockaddr *) &server_addr,
-		&server_addr_len);
+			&server_addr_len);
 
 	if (is_coordinator) {
 		fprintf(peers_file, "%d %d\n", server_addr.sin_port, 1);
 	}
 
-	while (is_run) {
-		struct sockaddr_in client_addr;
-		socklen_t client_addr_len = sizeof(client_addr);
+	while (connection_is_run) {
+		int i = 0;
+		int max_socket_fd;
+		fd_set socket_fds_set;
 
-		int client_socket = accept(server_socket,
-			(struct sockaddr *) &client_addr,
-			&client_addr_len);
+		FD_ZERO(&socket_fds_set);
+		FD_SET(server_socket, &socket_fds_set);
 
-		struct peer *new = peer_new(client_addr.sin_port, 1);
-		new->socket_fd = client_socket;
-		peer_list_add(new);
+		max_socket_fd = server_socket;
+
+		for (i = 0; i < peer_list_size(); i++) {
+			int s;
+
+			s = peer_list_get(i)->socket;
+			max_socket_fd = (s > max_socket_fd) ? s : max_socket_fd;
+			FD_SET(s, &socket_fds_set);
+		}
+
+		if (select(max_socket_fd + 1, &socket_fds_set,
+					NULL, NULL, NULL) < 0)
+			sdie("select");
+
+		if (FD_ISSET(server_socket, &socket_fds_set)) {
+			struct sockaddr_in client_addr;
+			socklen_t client_addr_len;
+
+			client_addr_len = sizeof(client_addr);
+
+			int client_socket = accept(server_socket,
+					(struct sockaddr *) &client_addr,
+					&client_addr_len);
+
+			struct peer *new = peer_new(client_addr.sin_port, 1);
+			new->socket = client_socket;
+			peer_list_add(new);
+
+			if (is_coordinator) {
+				fprintf(peers_file, "%d %d\n", new->port, new->status);
+			}
+		}
+		for (i = 0; i < peer_list_size(); i++) {
+			struct peer *p;
+
+			p = peer_list_get(i);
+			if (FD_ISSET(p->socket, &socket_fds_set)) {
+				fflush(stdout);
+				printf("P2PChatroom [%s]: %s", p->name, "Hello");
+			}
+		}
+
 	}
 	return NULL;
-}
-
-
-void *connections_handler_run(void *data)
-{
-
 }
