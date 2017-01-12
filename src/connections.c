@@ -11,15 +11,15 @@
 /*
  * Copyright (c) 2015 Parham Alvani.
  */
-#include "connections.h"
-#include "coordinator.h"
-#include "peer.h"
-#include "common.h"
-
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+#include "connections.h"
+#include "coordinator.h"
+#include "peer.h"
+#include "common.h"
 
 int connection_is_run = 1;
 
@@ -118,7 +118,7 @@ void *connections_run(void *data)
 			peer_list_add(new);
 
 			if (is_coordinator) {
-				fprintf(peer_file, "%d %d\n", new->port, new->status);
+				fprintf(peer_file, "%hu %d\n", new->port, new->status);
 				fflush(peer_file);
 			}
 		}
@@ -128,7 +128,6 @@ void *connections_run(void *data)
 			p = peer_list_get(i);
 			if (FD_ISSET(p->socket, &socket_fds_set)) {
 				fflush(stdout);
-				printf("P2PChatroom [%d]: %s\n", p->port, "Hello");
 			}
 		}
 
