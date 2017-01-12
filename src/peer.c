@@ -23,6 +23,7 @@ struct peer *peer_new(uint16_t port, int status)
 	struct peer *new;
 	
 	new = malloc(sizeof(struct peer));
+	new->name[0] = 0;
 	new->port = port;
 	new->status = status;
 	new->next = NULL;
