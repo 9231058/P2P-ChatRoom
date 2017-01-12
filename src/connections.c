@@ -47,9 +47,12 @@ void *connections_run(void *data)
 		strcpy(new->name, peer_name);
 
 		if (peer_status) {
-			int client_socket = socket(AF_INET, SOCK_STREAM, 0);
-
+			struct message m;
+			int client_socket;
 			struct sockaddr_in client_addr;
+			
+			client_socket = socket(AF_INET, SOCK_STREAM, 0);
+
 			socklen_t client_addr_len = sizeof(client_addr);
 
 			client_addr.sin_family = AF_INET;
@@ -60,6 +63,11 @@ void *connections_run(void *data)
 					(const struct sockaddr *) &client_addr,
 					client_addr_len);
 			new->socket = client_socket;
+
+			m.m_size = 0;
+			strcpy(m.src_name, info_username);
+			strcpy(m.dst_name, new->name);
+			send_message(&m, client_socket);
 		}
 
 		peer_list_add(new);
