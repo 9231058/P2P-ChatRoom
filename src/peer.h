@@ -14,16 +14,18 @@
 #ifndef PEER_H
 #define PEER_H
 
+#include <stdint.h>
+
 struct peer {
 	char name[255];
 	int socket;
-	int port;
+	uint16_t port;
 	int status;
 	struct peer *next;
 };
 
 
-struct peer *peer_new(int port, int status);
+struct peer *peer_new(uint16_t port, int status);
 
 void peer_list_add(struct peer *obj);
 
