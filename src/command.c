@@ -19,9 +19,30 @@
 #include "command.h"
 #include "common.h"
 #include "coordinator.h"
+#include "message.h"
+#include "peer.h"
+#include "net.h"
+#include "info.h"
 
 void send_command(const char *message, const char *user)
 {
+	struct message m;
+	struct peer *p;
+	int i;
+
+	strcpy(m.body, message);
+	m.m_size = strlen(message);
+	strcpy(m.dst_name, user);
+	strcpy(m.src_name, info_username);
+
+
+	for (i = 0; i < peer_list_size(); i++) {
+		p = peer_list_get(i);
+		if (!strcmp(p->name, user)) {
+			send_message(&m, p->socket);
+			return;
+		}
+	}
 }
 
 void quit_command(void)
@@ -52,8 +73,8 @@ void command_dispatcher(const char *command)
 		char user[255];
 		char message[1024];
 
-		len = sscanf(command, "%s %s: ", verb, user);
-		if (len < 2) {
+		len = sscanf(command, "%s %s: %s", verb, user, message);
+		if (len < 3) {
 			printf("send user: message\n");
 			return;
 		}
