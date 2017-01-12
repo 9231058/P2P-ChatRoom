@@ -15,6 +15,7 @@
 #define PEER_H
 
 struct peer {
+	char name[255];
 	int socket_fd;
 	int port;
 	int status;
