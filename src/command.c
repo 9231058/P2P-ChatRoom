@@ -45,6 +45,25 @@ void send_command(char *message, const char *user)
 	}
 }
 
+void send_all_command(char *message)
+{
+	struct message m;
+	struct peer *p;
+	int i;
+
+	m.body = message;
+	m.m_size = strlen(message);
+	strcpy(m.src_name, info_username);
+
+
+	for (i = 0; i < peer_list_size(); i++) {
+		p = peer_list_get(i);
+		strcpy(m.dst_name, p->name);
+		send_message(&m, p->socket);
+	}
+}
+
+
 void list_command(void)
 {
 	int i;
@@ -87,10 +106,19 @@ void command_dispatcher(const char *command)
 
 		len = sscanf(command, "%s %s %s", verb, user, message);
 		if (len < 3) {
-			printf("send user: message\n");
+			printf("send user message\n");
 			return;
 		}
 		send_command(message, user);
+	} else if (!strcmp(verb, "sendall")) {
+		char message[1024];
+
+		len = sscanf(command, "%s %s", verb, message);
+		if (len < 2) {
+			printf("sendall message\n");
+			return;
+		}
+		send_all_command(message);
 	} else if (!strcmp(verb, "list")) {
 		list_command();
 	}
