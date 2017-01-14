@@ -70,6 +70,9 @@ void *connections_run(void *data)
 
 	/* Connects to others server */
 	while (fscanf(peer_file, "%s %d %d", peer_name, &peer_port, &peer_status) == 3) {
+		if (!strcmp(peer_name, info_username))
+			continue;
+
 		struct peer *new = peer_new(peer_port, peer_status);
 		strcpy(new->name, peer_name);
 
